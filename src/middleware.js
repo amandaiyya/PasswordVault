@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function middleware(req) {
     const token = req.cookies.get("accessToken")?.value;
+    const url = req.nextUrl.clone();
 
-    const url = req.nextUrl;
+    const publicPaths = ['/login', '/signup', '/api/sign-up', '/api/login'];
 
     if(url.pathname === '/') {
         if(token) {
@@ -13,31 +14,24 @@ export async function middleware(req) {
         }
     }
 
-    if(url.pathname === '/signup' || url.pathname === '/login') {
-        if(token) {
+    if(publicPaths.includes(url.pathname)) {
+        if(token && (url.pathname === '/login' || url.pathname === '/signup')) {
             return NextResponse.redirect(new URL('/vault', url.origin));
         } else {
             return NextResponse.next();
         }
     }
 
-    if(url.pathname === '/api/sign-up' || url.pathname === '/api/login') return NextResponse.next();
-
-    if(!token) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Unauthorized"
-            },
-            { status: 401 }
-        )
-    }
+    if(!token) return NextResponse.redirect(new URL('/login', url.origin));
 
     return NextResponse.next();
 }
 
 export const config = {
     matcher: [
-        '/:path*'
+        '/',
+        '/signup',
+        '/login',
+        '/api/:path*'
     ]
 }

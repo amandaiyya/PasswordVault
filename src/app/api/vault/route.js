@@ -22,6 +22,16 @@ export async function POST(req) {
 
         const token = await req.cookies.get("accessToken").value;
 
+        if(!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                { status: 401 }
+            )
+        }
+
         const decoded = jwt.verify(token, envConfig.tokenSecret);
 
         await Vault.create({
@@ -58,6 +68,16 @@ export async function GET(req) {
         await dbConnect();
 
         const token = await req.cookies.get("accessToken").value;
+
+        if(!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                { status: 401 }
+            )
+        }
 
         const decoded = jwt.verify(token, envConfig.tokenSecret);
 

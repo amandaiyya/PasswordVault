@@ -23,6 +23,16 @@ export async function PUT(req, {params}) {
         await dbConnect();
 
         const token = await req.cookies.get("accessToken").value;
+
+        if(!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                { status: 401 }
+            )
+        }
         
         jwt.verify(token, envConfig.tokenSecret);
 
@@ -95,6 +105,16 @@ export async function DELETE(req, {params}) {
         await dbConnect();
 
         const token = await req.cookies.get("accessToken").value;
+
+        if(!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                { status: 401 }
+            )
+        }
         
         jwt.verify(token, envConfig.tokenSecret);
 
