@@ -1,0 +1,97 @@
+import dbConnect from "@/lib/dbConnect";
+import envConfig from "@/lib/envConfig";
+import Vault from "@/models/Vault.model";
+import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server";
+
+export async function POST(req) {
+    const {title, username, password, url = '', note = ''} = await req.json();
+
+    if(!title?.trim() || !username?.trim() || !password) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Title, Username and Password are required"
+            },
+            { status: 400 }
+        )
+    }
+
+    try {
+        await dbConnect();
+
+        const token = await req.cookies.get("accessToken").value;
+
+        const decoded = jwt.verify(token, envConfig.tokenSecret);
+
+        await Vault.create({
+            title,
+            username,
+            password,
+            url,
+            note,
+            owner: decoded._id
+        })
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: "Vault entry saved successfully",
+            },
+            { status: 201 }
+        )
+    } catch (error) {
+        console.log("Failed saving vault entry", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Failed saving vault entry"
+            },
+            { status: 500 }
+        )
+    }
+}
+
+export async function GET(req) {
+    try {
+        await dbConnect();
+
+        const token = await req.cookies.get("accessToken").value;
+
+        const decoded = jwt.verify(token, envConfig.tokenSecret);
+
+        const entries = await Vault.find({
+            owner: decoded._id
+        }).sort({ createdAt: -1 });
+
+        if(!entries?.length) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "No entries found in the vault"
+                },
+                { status: 404 }
+            )
+        }
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: "Vault's entries fetched successfully",
+                data: entries
+            },
+            { status: 200 }
+        )
+    } catch (error) {
+        console.log("Failed fetching vault's all entries", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Failed fetching vault's all entries"
+            },
+            { status: 500 }
+        )
+    }
+}
