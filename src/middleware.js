@@ -4,7 +4,7 @@ export async function middleware(req) {
     const token = req.cookies.get("accessToken")?.value;
     const url = req.nextUrl.clone();
 
-    const publicPaths = ['/login', '/signup', '/api/sign-up', '/api/login'];
+    const publicPaths = ['/login', '/signup', '/vault', '/api/signup', '/api/login'];
 
     if(url.pathname === '/') {
         if(token) {
@@ -17,7 +17,13 @@ export async function middleware(req) {
     if(publicPaths.includes(url.pathname)) {
         if(token && (url.pathname === '/login' || url.pathname === '/signup')) {
             return NextResponse.redirect(new URL('/vault', url.origin));
-        } else {
+        }
+
+        else if(!token && (url.pathname === '/vault')) {
+            return NextResponse.redirect(new URL('/login', url.origin));
+        }
+
+        else {
             return NextResponse.next();
         }
     }
@@ -32,6 +38,7 @@ export const config = {
         '/',
         '/signup',
         '/login',
+        '/vault',
         '/api/:path*'
     ]
 }

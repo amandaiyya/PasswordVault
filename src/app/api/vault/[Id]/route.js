@@ -3,17 +3,30 @@ import envConfig from "@/lib/envConfig";
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Vault from "@/models/Vault.model";
+import mongoose from "mongoose";
 
 export async function PUT(req, {params}) {
     const { Id } = await params;
 
-    const {title, username, password, url = '', note = ''} = await req.json();
-
-    if(!title?.trim() || !username?.trim() || !password) {
+    if(!mongoose.Types.ObjectId.isValid(Id)){
         return NextResponse.json(
             {
                 success: false,
-                message: "Title, Username and Password are required"
+                message: "Entry's ID is Invalid"
+            },
+            { status: 400 }
+        )
+    }
+
+    const data = await req.json();
+
+    console.log(data);
+
+    if(!data) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Entry's data is required"
             },
             { status: 400 }
         )
@@ -36,7 +49,7 @@ export async function PUT(req, {params}) {
         
         jwt.verify(token, envConfig.tokenSecret);
 
-        const entry = await Vault.findById(Id);
+        const entry = await Vault.findByIdAndUpdate(Id, data);
 
         if(!entry) {
             return NextResponse.json(
@@ -48,40 +61,10 @@ export async function PUT(req, {params}) {
             )
         }
 
-        const isTitleChanged = title !== entry.title;
-        const isUsernameChanged = username !== entry.username;
-        const isPasswordChanged = password !== entry.password;
-        const isURLChanged = url !== entry.url;
-        const isNoteChanged = note !== entry.note;
-
-        if(isTitleChanged) entry.title = title;
-        if(isUsernameChanged) entry.username = username;
-        if(isPasswordChanged) entry.password = password;
-        if(isURLChanged) entry.url = url;
-        if(isNoteChanged) entry.note = note;
-
-        if(
-            isTitleChanged || 
-            isUsernameChanged || 
-            isPasswordChanged || 
-            isURLChanged || 
-            isNoteChanged
-        ) {
-            await entry.save();
-
-            return NextResponse.json(
-                {
-                    success: true,
-                    message: "Vault's entry updated successfully",
-                },
-                { status: 200 }
-            )
-        }
-
         return NextResponse.json(
             {
-                success: false,
-                message: "No Changes detected",
+                success: true,
+                message: "Vault's entry updated successfully",
             },
             { status: 200 }
         )
@@ -101,6 +84,16 @@ export async function PUT(req, {params}) {
 export async function DELETE(req, {params}) {
     const { Id } = await params;
 
+    if(!mongoose.Types.ObjectId.isValid(Id)){
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Entry's ID is Invalid"
+            },
+            { status: 400 }
+        )
+    }
+
     try {
         await dbConnect();
 
@@ -118,7 +111,7 @@ export async function DELETE(req, {params}) {
         
         jwt.verify(token, envConfig.tokenSecret);
 
-        const entry = await Vault.findById(Id);
+        const entry = await Vault.findByIdAndDelete(Id);
 
         if(!entry) {
             return NextResponse.json(
@@ -129,8 +122,6 @@ export async function DELETE(req, {params}) {
                 { status: 404 }
             )
         }
-
-        await entry.deleteOne();
 
         return NextResponse.json(
             {

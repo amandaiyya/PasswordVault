@@ -5,13 +5,13 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-    const {title, username, password, url = '', note = ''} = await req.json();
+    const {data} = await req.json();
 
-    if(!title?.trim() || !username?.trim() || !password) {
+    if(!data) {
         return NextResponse.json(
             {
                 success: false,
-                message: "Title, Username and Password are required"
+                message: "Entry's data is required"
             },
             { status: 400 }
         )
@@ -35,11 +35,7 @@ export async function POST(req) {
         const decoded = jwt.verify(token, envConfig.tokenSecret);
 
         await Vault.create({
-            title,
-            username,
-            password,
-            url,
-            note,
+            data,
             owner: decoded._id
         })
 

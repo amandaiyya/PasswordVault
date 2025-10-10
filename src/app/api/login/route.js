@@ -70,7 +70,9 @@ export async function POST(req) {
                 message: "User logged in successfully",
                 user: {
                     _id: user._id,
-                    email: user.email
+                    email: user.email,
+                    salt: user.salt,
+                    vaultTest: user.vaultTest
                 }
             },
             { status: 200 }

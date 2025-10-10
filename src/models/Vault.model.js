@@ -1,31 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
 const VaultSchema = new Schema({
-    title: {
+    data: {
         type: String,
-        required: [true, "Title is required"],
-        trim: true,
-    },
-
-    username: {
-        type: String,
-        required: [true, "Username is required"],
-        trim: true,
-    },
-
-    password: {
-        type: String,
-        required: [true, "Password is required"],
-    },
-
-    url: {
-        type: String,
-        default: "",
-    },
-
-    note: {
-        type: String,
-        default: "",
+        required: [true, "Entry's data is required"]
     },
 
     owner: {

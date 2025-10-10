@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 
 export async function POST(req) {
-    const {email, password} = await req.json();
+    const {email, password, salt, vaultTest} = await req.json();
 
-    if(!email || !password) {
+    if(!email || !password || !salt || !vaultTest) {
         return NextResponse.json(
             {
                 success: false,
@@ -33,19 +33,17 @@ export async function POST(req) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await User.create({
+        await User.create({
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            salt,
+            vaultTest
         })
 
         return NextResponse.json(
             {
                 success: true,
                 message: "User signed up successfully",
-                user: {
-                    _id: newUser._id,
-                    email: newUser.email,
-                }
             },
             { status: 201 }
         )
