@@ -5,6 +5,13 @@ It allows users to securely generate, encrypt, store, and manage passwords local
 
 ---
 
+## 🌍 Live Demo
+
+👉 **[View Password Vault Live](https://password-vault-beta-sage.vercel.app/)**  
+*(Deployed on Vercel — works best on desktop browsers with modern Web Crypto support.)*
+
+---
+
 ## 🚀 Features
 
 ### 🔑 Authentication
